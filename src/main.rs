@@ -3,20 +3,21 @@
 
 use core::panic::PanicInfo;
 
+use io::vga_buffer;
+
+pub mod io;
+
 static HELLO_WORLD: &[u8] = b"Hello from my custom kernel!";
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
-    let vga_buffer = 0xb8000 as *mut u8;
-
-    for (i, &byte) in HELLO_WORLD.iter().enumerate() {
-        unsafe {
-            *vga_buffer.offset(i as isize * 2) = byte;
-            *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
+pub extern "C" fn _start() {
+    print_boot_message();
 
     loop {}
+}
+
+fn print_boot_message() {
+    vga_buffer::print(HELLO_WORLD);
 }
 
 #[panic_handler]
