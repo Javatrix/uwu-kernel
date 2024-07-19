@@ -43,21 +43,27 @@ fn vga_buffer() -> *mut u8 {
     0xb8000 as *mut u8
 }
 
+pub fn num_to_ascii(number: u8) -> u8 {
+    return (48 + number) as u8;
+}
+
+const VGA_WIDTH: u8 = 80;
+const VGA_HEIGHT: u8 = 25;
+static mut CURSOR_POS: u32 = 0;
+
 pub fn print(chars: &[u8]) {
-    for (i, &byte) in chars.iter().enumerate() {
-        print_screen_char(
-            ScreenChar {
-                ascii_char: byte,
-                color_code: ColorCode::new(Color::White, Color::Cyan),
-            },
-            i,
-        );
+    for &byte in chars {
+        print_screen_char(ScreenChar {
+            ascii_char: byte,
+            color_code: ColorCode::new(Color::White, Color::Cyan),
+        });
     }
 }
 
-fn print_screen_char(char: ScreenChar, pos: usize) {
+fn print_screen_char(char: ScreenChar) {
     unsafe {
-        *vga_buffer().offset(pos as isize * 2) = char.ascii_char;
-        *vga_buffer().offset(pos as isize * 2 + 1) = char.color_code.0;
+        *vga_buffer().offset(CURSOR_POS as isize * 2) = char.ascii_char;
+        *vga_buffer().offset(CURSOR_POS as isize * 2 + 1) = char.color_code.0;
+        CURSOR_POS += 1;
     }
 }
